@@ -1,0 +1,39 @@
+version: '3'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    ports:
+      # Expose the port for easy inspection
+      - 3399:3306
+    networks:
+      - app-network
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: search_db
+      MYSQL_USER: search_user
+      MYSQL_PASSWORD: search_password
+    volumes:
+      - ./example/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build: .
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - app-network
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: search_user
+      DB_PASSWORD: search_password
+      DB_NAME: search_db
+      PORT: 3000
+      REFRESH_INTERVAL: 10000
+    depends_on:
+      - db
+
+networks:
+  app-network:
+    driver: bridge
